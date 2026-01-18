@@ -182,3 +182,73 @@ else:
     
     ⚠️ **Peringatan:** Alat ini hanya melihat **Teknikal**. Wajib cek **Broxsum (Bandarmologi)** manual sebelum beli!
     """)
+
+# --- DI DALAM APP.PY ---
+
+# ... (Kode chart di atas) ...
+
+st.markdown("---")
+st.header("🕵️‍♂️ Bandar Detector (Kalkulator Manual)")
+
+# Kita bagi kolom: Kiri Input, Kanan Hasil Analisis
+col_input, col_result = st.columns([1, 1])
+
+with col_input:
+    with st.form("broxsum_form"):
+        st.write("Masukkan Data Top 1/3 Broker (Dalam Miliar Rupiah)")
+        
+        c1, c2 = st.columns(2)
+        with c1:
+            st.markdown("### 🟢 Top Buyer")
+            buyer_val = st.number_input("Total Value Buyer (M)", min_value=0.0, step=0.1, help="Contoh: 15.5 Miliar")
+            buyer_avg = st.number_input("Avg Price Buyer", min_value=0, step=1)
+        
+        with c2:
+            st.markdown("### 🔴 Top Seller")
+            seller_val = st.number_input("Total Value Seller (M)", min_value=0.0, step=0.1, help="Contoh: 10.2 Miliar")
+            seller_avg = st.number_input("Avg Price Seller", min_value=0, step=1)
+            
+        submitted = st.form_submit_button("Analisis Bandarmologi")
+
+with col_result:
+    if submitted:
+        # 1. Hitung Net
+        net_val = buyer_val - seller_val
+        
+        # 2. Tentukan Status
+        if net_val > 0:
+            status = "BIG ACCUMULATION" if net_val > 5 else "SMALL ACCUMULATION"
+            color = "green"
+            emoji = "bull" # Custom logic visual
+        elif net_val < 0:
+            status = "BIG DISTRIBUTION" if net_val < -5 else "SMALL DISTRIBUTION"
+            color = "red"
+            emoji = "bear"
+        else:
+            status = "NEUTRAL"
+            color = "gray"
+            
+        # 3. Tampilkan Visual HTML Keren
+        st.markdown(f"""
+        <div style="
+            background-color: #1E1E1E;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            border: 2px solid {color};
+        ">
+            <h2 style="color: white; margin:0;">VONIS:</h2>
+            <h1 style="color: {color}; margin:0; font-size: 3em;">{status}</h1>
+            <h3 style="color: white;">Net Flow: Rp {net_val:.1f} Miliar</h3>
+        </div>
+        """, unsafe_allow_html=True)
+        
+        # 4. Analisis Avg Price (Posisi Bandar)
+        if buyer_avg > 0:
+            # Hitung Jarak Harga Sekarang vs Modal Bandar
+            # (Asumsi kita ambil harga terakhir dari variabel global 'last_close' kalau ada, 
+            #  atau manual input harga sekarang)
+            st.info(f"💡 **Insight:** Modal Buyer di {buyer_avg}. Jika harga sekarang di bawah {buyer_avg}, Bandar sedang Floating Loss (Potensi Rebound).")
+
+    else:
+        st.info("👈 Masukkan data dari aplikasi sekuritas Anda untuk melihat analisis.")
